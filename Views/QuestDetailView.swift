@@ -2,20 +2,21 @@ import SwiftUI
 
 struct QuestDetailView: View {
     let quest: Quest
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var isAccepted = false
-    
+
     var body: some View {
         VStack(spacing: 20) {
             Text(quest.title)
                 .font(.largeTitle)
-            
+
             Text("Category: \(quest.category)")
             Text("Reward: \(quest.xpReward) XP")
             Text("Location: \(quest.locationName)")
-            
+
             Text(quest.description)
                 .padding()
-            
+
             Button(action: {
                 isAccepted = true
             }) {
@@ -26,9 +27,11 @@ struct QuestDetailView: View {
                     .cornerRadius(8)
             }
             .disabled(isAccepted)
-            
+
             Spacer()
         }
         .padding()
+        .navigationTitle("Quest Details")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
