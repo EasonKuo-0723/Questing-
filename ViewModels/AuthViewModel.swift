@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 @MainActor
 class AuthViewModel: ObservableObject {
@@ -38,11 +39,22 @@ class AuthViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let uid = try await AuthService.shared.signUp(email: email, password: password)
-            let newUser = User(id: uid, email: email, username: username, createdAt: Date())
+            let uid = try await AuthService.shared.signUp(
+                email: email,
+                password: password
+            )
+
+            let newUser = User(
+                id: uid,
+                name: username,
+                email: email
+            )
+
             try await FirebaseService.shared.saveUser(user: newUser)
+
             self.currentUser = newUser
             self.isAuthenticated = true
+
         } catch {
             self.errorMessage = error.localizedDescription
         }

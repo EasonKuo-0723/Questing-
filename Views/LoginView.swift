@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct LoginView: View {
+
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showSignUp = false
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
+
                 Text("Welcome Back")
                     .font(.largeTitle)
                     .bold()
@@ -14,6 +16,7 @@ struct LoginView: View {
                 TextField("Email", text: $authViewModel.email)
                     .textFieldStyle(.roundedBorder)
                     .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
 
                 SecureField("Password", text: $authViewModel.password)
                     .textFieldStyle(.roundedBorder)
@@ -24,9 +27,11 @@ struct LoginView: View {
                         .font(.caption)
                 }
 
-                Button(action: {
-                    Task { await authViewModel.login() }
-                }) {
+                Button {
+                    Task {
+                        await authViewModel.login()
+                    }
+                } label: {
                     if authViewModel.isLoading {
                         ProgressView()
                     } else {

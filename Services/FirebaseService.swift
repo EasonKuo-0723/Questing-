@@ -1,29 +1,73 @@
-import Foundation
-import FirebaseAuth
+import SwiftUI
+import Combine
 
-class AuthService {
-    static let shared = AuthService()
-    private init() {}
+@MainActor
+class AuthViewModel: ObservableObject {
+    @Published var email = ""
+    @Published var password = ""
+    @Published var username = ""
+    @Published var isAuthenticated = false
+    @Published var currentUser: User?
+    @Published var errorMessage: String?
+    @Published var isLoading = false
 
-    // MARK: - Sign Up
-    func signUp(email: String, password: String) async throws -> String {
-        let result = try await Auth.auth().createUser(withEmail: email, password: password)
-        return result.user.uid
+    func login() async {
+        guard !email.isEmpty, !password.isEmpty else {
+            errorMessage = "Please enter both email and password."
+            return
+        }
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let uid = try await AuthService.shared.signIn(email: email, password: password)
+            let user = try await FirebaseService.shared.fetchUser(userId: uid)
+            self.currentUser = user
+            self.isAuthenticated = true
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 
-    // MARK: - Sign In
-    func signIn(email: String, password: String) async throws -> String {
-        let result = try await Auth.auth().signIn(withEmail: email, password: password)
-        return result.user.uid
+    func signUp() async {
+        guard !email.isEmpty, !password.isEmpty, !username.isEmpty else {
+            errorMessage = "Please fill in all fields."
+            return
+        }
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let uid = try await AuthService.shared.signUp(
+                email: email,
+                password: password
+            )
+
+            let newUser = User(
+                id: uid,
+                name: username,
+                email: email
+            )
+
+            try await FirebaseService.shared.saveUser(user: newUser)
+
+            self.currentUser = newUser
+            self.isAuthenticated = true
+
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 
-    // MARK: - Sign Out
-    func signOut() throws {
-        try Auth.auth().signOut()
-    }
-
-    // MARK: - Current User ID
-    var currentUserId: String? {
-        return Auth.auth().currentUser?.uid
+    func signOut() {
+        do {
+            try AuthService.shared.signOut()
+            self.isAuthenticated = false
+            self.currentUser = nil
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
     }
 }

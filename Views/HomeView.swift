@@ -22,13 +22,17 @@ struct HomeView: View {
                         }
                     }
                 } else {
-                    List(questViewModel.quests) { quest in
-                        NavigationLink(destination: QuestDetailView(quest: quest)) {
-                            VStack(alignment: .leading) {
+                    List(questViewModel.quests, id: \.id) { quest in
+                        NavigationLink {
+                            QuestDetailView(quest: quest)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
                                 Text(quest.title)
                                     .font(.headline)
-                                Text("\(quest.points) XP • \(quest.description)")
+
+                                Text("\(quest.xpReward) XP • \(quest.description)")
                                     .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }

@@ -1,36 +1,61 @@
 import SwiftUI
 
-struct LoginView: View {
+struct SignUpView: View {
+
     @EnvironmentObject var authViewModel: AuthViewModel
-    @State private var showSignUp = false
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                Text("Welcome Back")
+
+                Text("Create Account")
                     .font(.largeTitle)
                     .bold()
 
-                TextField("Email", text: $authViewModel.email)
-                    .textFieldStyle(.roundedBorder)
-                    .textInputAutocapitalization(.never)
+                // Username
+                TextField(
+                    "Username",
+                    text: $authViewModel.username
+                )
+                .textFieldStyle(.roundedBorder)
+                .textInputAutocapitalization(.never)
 
-                SecureField("Password", text: $authViewModel.password)
-                    .textFieldStyle(.roundedBorder)
+                // Email
+                TextField(
+                    "Email",
+                    text: $authViewModel.email
+                )
+                .textFieldStyle(.roundedBorder)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.emailAddress)
 
+                // Password
+                SecureField(
+                    "Password",
+                    text: $authViewModel.password
+                )
+                .textFieldStyle(.roundedBorder)
+
+                // Error message
                 if let error = authViewModel.errorMessage {
                     Text(error)
                         .foregroundColor(.red)
                         .font(.caption)
                 }
 
-                Button(action: {
-                    Task { await authViewModel.login() }
-                }) {
+                // Sign Up Button
+                Button {
+                    Task {
+                        await authViewModel.signUp()
+                    }
+                } label: {
+
                     if authViewModel.isLoading {
                         ProgressView()
+                            .frame(maxWidth: .infinity)
                     } else {
-                        Text("Log In")
+                        Text("Sign Up")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.blue)
@@ -39,15 +64,13 @@ struct LoginView: View {
                     }
                 }
 
-                Button("Don't have an account? Sign Up") {
-                    showSignUp = true
+                // Back to login
+                Button("Already have an account? Log In") {
+                    dismiss()
                 }
                 .padding(.top)
             }
             .padding()
-            .navigationDestination(isPresented: $showSignUp) {
-                SignUpView()
-            }
         }
     }
 }
